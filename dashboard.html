@@ -3,118 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VoiceGuard AI - Real-Time Call Telemetry</title>
+    <title>VoiceGuard AI - In-Browser Test Suite</title>
     <style>
-        :root {
-            --bg: #0b0f19;
-            --card: #161e2e;
-            --border: #26334d;
-            --green: #22c55e;
-            --red: #ef4444;
-            --text: #f8fafc;
-            --subtext: #94a3b8;
-        }
-        body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-        .logo { font-size: 1.4rem; font-weight: 800; color: #38bdf8; }
+        :root { --bg: #0b0f19; --card: #161e2e; --border: #26334d; --green: #22c55e; --red: #ef4444; --text: #f8fafc; --subtext: #94a3b8; }
+        body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; }
         .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-        .card-title { font-size: 0.85rem; text-transform: uppercase; color: var(--subtext); letter-spacing: 0.05em; margin-bottom: 15px; }
-        .prob-value { font-size: 3.5rem; font-weight: 900; text-align: center; margin: 10px 0; transition: color 0.3s; }
+        .prob-value { font-size: 3.5rem; font-weight: 900; text-align: center; margin: 10px 0; }
         .meter-bar { width: 100%; height: 16px; background: #26334d; border-radius: 8px; overflow: hidden; }
         .meter-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--red)); transition: width 0.2s; }
-        .status-banner { padding: 15px; border-radius: 8px; text-align: center; font-size: 1.2rem; font-weight: 700; margin-top: 20px; transition: all 0.3s; }
+        .status-banner { padding: 15px; border-radius: 8px; text-align: center; font-size: 1.1rem; font-weight: 700; margin-top: 20px; }
         .verified { background: rgba(34, 197, 94, 0.15); color: var(--green); border: 1px solid var(--green); }
-        .alert { background: rgba(239, 68, 68, 0.15); color: var(--red); border: 1px solid var(--red); animation: pulse 1s infinite alternate; }
-        @keyframes pulse { from { opacity: 0.8; } to { transform: scale(1.01); } }
-        .phone-mockup { width: 220px; height: 420px; background: #000; border: 6px solid #334155; border-radius: 30px; margin: 0 auto; padding: 20px 15px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
-        .caller-avatar { width: 60px; height: 60px; border-radius: 50%; background: #334155; margin: 20px auto 10px; }
-        .overlay-badge { width: 90%; padding: 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-align: center; position: absolute; top: 120px; left: 5%; }
+        .alert { background: rgba(239, 68, 68, 0.15); color: var(--red); border: 1px solid var(--red); }
         .logs-box { background: #050811; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.8rem; height: 180px; overflow-y: auto; color: #38bdf8; }
-        .log-line { margin-bottom: 4px; border-bottom: 1px solid #161e2e; }
+        .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; font-size: 1rem; margin-top: 10px; }
+        .btn-start { background: var(--green); color: #000; }
+        .btn-stop { background: var(--red); color: #fff; }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">🛡️ VoiceGuard AI Engine</div>
-        <div id="conn-state" style="padding: 4px 12px; border-radius: 12px; background: #26334d; font-size: 0.8rem;">Connecting...</div>
+        <div style="font-size: 1.4rem; font-weight: 800; color: #38bdf8;">🛡️ VoiceGuard AI (Browser Testing)</div>
+        <div id="conn-state" style="padding: 4px 12px; border-radius: 12px; background: #26334d; font-size: 0.8rem;">Idle</div>
     </header>
 
     <div class="grid">
         <div style="display: flex; flex-direction: column; gap: 20px;">
             <div class="card">
-                <div class="card-title">Live Call Threat Gauge</div>
+                <div style="font-size: 0.85rem; color: var(--subtext);">LIVE VOICE THREAT GAUGE</div>
                 <div id="prob-text" class="prob-value" style="color: var(--green);">0.00%</div>
                 <div class="meter-bar"><div id="meter-fill" class="meter-fill"></div></div>
-                <div id="status-banner" class="status-banner verified">AWAITING INCOMING PHONE CALL...</div>
+                <div id="status-banner" class="status-banner verified">CLICK START MICROPHONE TO TEST</div>
             </div>
             <div class="card">
-                <div class="card-title">WebSocket Telemetry Stream</div>
+                <div style="font-size: 0.85rem; color: var(--subtext); margin-bottom: 10px;">WEBSOCKET INFERENCE LOGS</div>
                 <div id="logs" class="logs-box"></div>
             </div>
         </div>
 
-        <div class="card" style="text-align: center;">
-            <div class="card-title">Receiver Mobile Overlay View</div>
-            <div class="phone-mockup">
-                <div>
-                    <div class="caller-avatar"></div>
-                    <div style="font-weight: 700;">Incoming Call</div>
-                    <div style="font-size: 0.8rem; color: var(--subtext);">Via Twilio Call Bridge</div>
-                </div>
-                <div id="phone-badge" class="overlay-badge verified">🟢 HUMAN VOICE</div>
-                <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 10px;">
-                    <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--red);"></div>
-                    <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--green);"></div>
-                </div>
-            </div>
+        <div class="card">
+            <div style="font-size: 0.85rem; color: var(--subtext); margin-bottom: 15px;">BROWSER TEST CONTROLS</div>
+            <p style="font-size: 0.85rem; color: var(--subtext);">Stream live microphone audio directly to your model backend without telephony configuration.</p>
+            <button id="mic-btn" class="btn btn-start" onclick="toggleMicrophone()">🎙️ Start Mic Stream</button>
         </div>
     </div>
 
     <script>
-        const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const dashboardWs = new WebSocket(`${wsProtocol}//${location.host}/ws/dashboard`);
-        
-        const probText = document.getElementById('prob-text');
-        const meterFill = document.getElementById('meter-fill');
-        const statusBanner = document.getElementById('status-banner');
-        const phoneBadge = document.getElementById('phone-badge');
-        const connState = document.getElementById('conn-state');
-        const logsBox = document.getElementById('logs');
+        let ws;
+        let audioContext;
+        let processor;
+        let micStream;
+        let isStreaming = false;
 
-        dashboardWs.onopen = () => {
-            connState.innerText = "Dashboard Telemetry Active";
-            connState.style.background = "rgba(34, 197, 94, 0.2)";
-            connState.style.color = "var(--green)";
-        };
-
-        dashboardWs.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            const prob = (data.fake_probability * 100).toFixed(2);
-
-            probText.innerText = prob + "%";
-            meterFill.style.width = prob + "%";
-
-            if (data.is_fake) {
-                statusBanner.className = "status-banner alert";
-                statusBanner.innerText = "🚨 " + data.status;
-                phoneBadge.className = "overlay-badge alert";
-                phoneBadge.innerText = "⚠️ AI CLONED VOICE";
-                probText.style.color = "var(--red)";
+        function toggleMicrophone() {
+            if (!isStreaming) {
+                startStreaming();
             } else {
-                statusBanner.className = "status-banner verified";
-                statusBanner.innerText = "🛡️ " + data.status;
-                phoneBadge.className = "overlay-badge verified";
-                phoneBadge.innerText = "🟢 VERIFIED HUMAN";
-                probText.style.color = "var(--green)";
+                stopStreaming();
             }
+        }
 
-            const entry = document.createElement('div');
-            entry.className = 'log-line';
-            entry.innerText = `[${new Date().toLocaleTimeString()}] Score: ${data.fake_probability} | ${data.status}`;
-            logsBox.appendChild(entry);
-            logsBox.scrollTop = logsBox.scrollHeight;
-        };
+        async function startStreaming() {
+            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${location.host}/ws/browser`);
+
+            ws.onopen = async () => {
+                document.getElementById('conn-state').innerText = "Mic Streaming Active";
+                document.getElementById('conn-state').style.color = "var(--green)";
+                document.getElementById('mic-btn').innerText = "🛑 Stop Mic Stream";
+                document.getElementById('mic-btn').className = "btn btn-stop";
+                isStreaming = true;
+
+                audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const source = audioContext.createMediaStreamSource(micStream);
+                
+                processor = audioContext.createScriptProcessor(2048, 1, 1);
+                source.connect(processor);
+                processor.connect(audioContext.destination);
+
+                processor.onaudioprocess = (e) => {
+                    if (!isStreaming) return;
+                    const float32Data = e.inputBuffer.getChannelData(0);
+                    const int16Data = new Int16Array(float32Data.length);
+                    for (let i = 0; i < float32Data.length; i++) {
+                        int16Data[i] = Math.max(-1, Math.min(1, float32Data[i])) * 0x7FFF;
+                    }
+                    ws.send(int16Data.buffer);
+                };
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                const prob = (data.fake_probability * 100).toFixed(2);
+
+                document.getElementById('prob-text').innerText = prob + "%";
+                document.getElementById('meter-fill').style.width = prob + "%";
+
+                const banner = document.getElementById('status-banner');
+                if (data.is_fake) {
+                    banner.className = "status-banner alert";
+                    banner.innerText = "🚨 " + data.status;
+                    document.getElementById('prob-text').style.color = "var(--red)";
+                } else {
+                    banner.className = "status-banner verified";
+                    banner.innerText = "🛡️ " + data.status;
+                    document.getElementById('prob-text').style.color = "var(--green)";
+                }
+
+                const entry = document.createElement('div');
+                entry.innerText = `[${new Date().toLocaleTimeString()}] Score: ${data.fake_probability} | ${data.status}`;
+                const logsBox = document.getElementById('logs');
+                logsBox.appendChild(entry);
+                logsBox.scrollTop = logsBox.scrollHeight;
+            };
+        }
+
+        function stopStreaming() {
+            isStreaming = false;
+            if (processor) processor.disconnect();
+            if (micStream) micStream.getTracks().forEach(track => track.stop());
+            if (audioContext) audioContext.close();
+            if (ws) ws.close();
+
+            document.getElementById('conn-state').innerText = "Idle";
+            document.getElementById('conn-state').style.color = "var(--subtext)";
+            document.getElementById('mic-btn').innerText = "🎙️ Start Mic Stream";
+            document.getElementById('mic-btn').className = "btn btn-start";
+        }
     </script>
 </body>
 </html>
